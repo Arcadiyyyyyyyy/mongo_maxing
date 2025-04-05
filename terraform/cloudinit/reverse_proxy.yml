@@ -1,0 +1,17 @@
+#cloud-config
+system_info:
+  default_user:
+    name: "admin"
+    primary_group: "admin"
+    groups: "sudo"
+    shell: "/bin/bash"
+    ssh_authorized_keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCTbfURVs8IeWKEpD6WJLX31h1f7sC6I1t6vgVBS+s9+SYQZxpTjSOEC4H2ZL4QFFHMb7n7BQmhRVjq/Wzjem97SJOyEa96wZcFuiKVte2Lp54rkKrogsvsU98muE6lpUdfvkXPrL2vpKYyopnZ3rRectQ4QOLIPt6IeFgFIPtajr70QGq4zHPkNQFfZzY7SPZYqoW8YF9VxJVlL5ZTZDxuPpcOxCVUeHWVie6dEaXSNtT5qO5+e+MmxRrGF5s45P+cyEyP/LQaE/9T5N/MrJMMbfycmpjC62AiD7VU409DwJAerREBGiwDUSMmHaif/781NO/wk3jg40zr+wCvgbOfhjzKyThLgKdVFhbva2NiEORmQx+QeefnNN397VtG202P0c+iZY2JcXvDpBMDzTscCPPaWsu9Rx1OD97a3elt1m9hCorhI9O65nhY1OzpkplvpZ4O/Eu4F8Zn5IqbX7kXNpfH9ItsC6WcqJN5tJ8a+0V5SK5ZDm5TjopVQSe9mjf4zIE7t26Z7cx9ZWfxwr2yfh37idpJIWA1JgtVUcuvT8nDahnc8Xx5Lu0B0AkxDqw+YvnEiEvcjKUobmIg9F6fwJCDvRUvF50jPLzrN06lQyXurVvnIPMgV3DuoCFzM06nAHJr1s6oVi1IoO4JnM5Hk4GGP69eb0rZSXNmtH3M5Q== root@MasterAndReverseProxy"
+    lock_passwd: true
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+
+users:
+  - default
+
+disable_root: true
+ssh_pwauth: false
