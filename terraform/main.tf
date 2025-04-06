@@ -42,17 +42,23 @@ resource "hcloud_firewall" "ssh_firewall" {
 
 resource "hcloud_primary_ip" "ReverseProxyIpv4_1" {
   name          = "ReverseProxyIpv4_1"
-  datacenter    = "fsn1-dc14"
+  datacenter    = var.hetzner_region
   type          = "ipv4"
   assignee_type = "server"
   auto_delete   = false
+}
+
+resource "hcloud_ssh_key" "ssh_access_key" {
+  name       = "Slave access key"
+  public_key = file("${path.module}/ssh/slave_rsa.pub")
+
 }
 
 resource "hcloud_server" "MainAndReverseProxy" {
   name        = "MainAndReverseProxy"
   image       = "ubuntu-24.04"
   server_type = "cx22"
-  location    = "fsn1"
+  datacenter  = var.hetzner_region
   public_net {
     ipv4_enabled = true
     ipv4         = hcloud_primary_ip.ReverseProxyIpv4_1.id
@@ -60,19 +66,21 @@ resource "hcloud_server" "MainAndReverseProxy" {
   }
   network {
     network_id = hcloud_network.network.id
+    ip         = "10.0.1.1"
   }
   depends_on = [
-    hcloud_network_subnet.network-subnet, hcloud_primary_ip.ReverseProxyIpv4_1
+    hcloud_network_subnet.network-subnet, hcloud_primary_ip.ReverseProxyIpv4_1, hcloud_ssh_key.ssh_access_key
   ]
-  user_data    = file("cloudinit/reverse_proxy.yml")
+  ssh_keys     = [hcloud_ssh_key.ssh_access_key.id]
+  user_data    = file("${path.module}/cloudinit/reverse_proxy.yml")
   firewall_ids = [hcloud_firewall.ssh_firewall.id]
 }
 
 resource "hcloud_server" "Slave" {
-  name        = "Slave"
-  image       = "ubuntu-24.04"
+  name        = "Slave-${count.index}"
+  image       = "docker-ce"
   server_type = "cx22"
-  location    = "fsn1"
+  datacenter  = var.hetzner_region
   public_net {
     ipv4_enabled = false
     ipv6_enabled = false
@@ -81,7 +89,9 @@ resource "hcloud_server" "Slave" {
     network_id = hcloud_network.network.id
   }
   depends_on = [
-    hcloud_network_subnet.network-subnet
+    hcloud_network_subnet.network-subnet, hcloud_ssh_key.ssh_access_key, hcloud_server.MainAndReverseProxy
   ]
-  user_data = file("cloudinit/slave.yml")
+  ssh_keys  = [hcloud_ssh_key.ssh_access_key.id]
+  user_data = file("${path.module}/cloudinit/slave.yml")
+  count     = var.slaves_count
 }
